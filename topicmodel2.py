@@ -27,13 +27,13 @@ def pull(query, db):
     return col
 
 
-def NMFtopic(data, ntopics=5, features=10000):
+def NMFtopic(data, term, ntopics=5, features=10000):
     """
     non negative matrix factorization topic modeling.
     This method generates topics specified by num_topics parameter.
-    The top words in each topic are written to the current directory.
-    A folder called num_topics+'_topics' is created with subfolders for each topic
+    A folder called num_topics+'_topics' is created with subfolders for each topic in the current directory
     and articles pertaining to that topic are written to that folder.
+    The top words in each topic are written to the num_topics+'_topics' folder.
     A .csv file is written to the num_topics+'_topics' folder with ['Artikel-id','Topic with highest share', 'Date', 'Publication']
 
     TFIDF vectors are used to represent the texts with the following settings:
@@ -52,27 +52,20 @@ def NMFtopic(data, ntopics=5, features=10000):
     dtm = vectorizer.fit_transform(articles)
     print 'document matrix:', dtm.shape
     feature_names = np.array(vectorizer.get_feature_names())
-    print len(feature_names),'features extracted\n'
-    print 'finding', ntopics, 'topics'
+    print len(feature_names), 'features extracted'
+    print 'finding', ntopics, 'topics...'
     nmf = decomposition.NMF(n_components=ntopics, random_state=1)
     doctopic = nmf.fit_transform(dtm)
     topic_words = []
     for topic in nmf.components_:
         word_idx = np.argsort(topic)[::-1][0:20]
         topic_words.append([feature_names[i] for i in word_idx])
-    print 'writing top words to file'
-    with codecs.open(str(ntopics) + '_topics_topwords', 'w', 'utf8') as f:
-        f.write('Topics : top words:\n')
-        for i, j in enumerate(topic_words):
-            f.write(str(i) + ':')
-            f.write(', '.join(j))
-            f.write('\n')
 
     doctopic = doctopic / np.sum(doctopic, axis=1,
                                  keepdims=True)  # we will scale the document-component matrix such that the component values associated with each document sum to one.
     ids = np.asarray([d[0] for d in data])
     # make folder setup
-    dir = str(ntopics) + '_topics'
+    dir = term + '_' + str(ntopics) + '_topics'
     try:
         os.mkdir(dir)
     except:
@@ -82,6 +75,14 @@ def NMFtopic(data, ntopics=5, features=10000):
             os.mkdir(dir + '/' + str(subdir))
         except:
             pass
+    print 'writing top words to file'
+    with codecs.open(dir + '/' + str(ntopics) + '_topics_topwords', 'w', 'utf8') as f:
+        f.write('Topics : top words:\n')
+        for i, j in enumerate(topic_words):
+            f.write(str(i) + ':')
+            f.write(', '.join(j))
+            f.write('\n')
+    print 'writing articles to folders'
     with open(dir + '/' + str(ntopics) + '_topics.csv', 'w') as f:
         writer = csv.writer(f)
         header = ['Artikel', 'Topic with highest share', 'Date', 'Publication']
@@ -92,22 +93,33 @@ def NMFtopic(data, ntopics=5, features=10000):
             out = list([ids[i], topic, data[i][1], data[i][2]])
             out.extend(doctopic[i])
             writer.writerow(out)
-            print 'writing articles to folders'
             with codecs.open(dir + '/' + str(topic) + '/' + ids[i], 'w', 'utf8') as f:
                 f.write(articles[i])
 
 
 
 if __name__=="__main__":
+    import sys
     start=time.time()
+    term = sys.argv[1]  # term can be OV,NI,DS
+    if term not in ['OV', 'NI', 'DS']:
+        print 'Term must be OV, NI or DS'
+        sys.exit(0)
     #pull the data
-    data=pull('Select * from dupetest where (OV>0) and (Pub = "B.T." or Pub="Jyllands-Posten" or Pub="Berlingske" or Pub="Information" or Pub="Ekstra Bladet" or Pub="Politiken")','INFO.db')
+    data = pull(
+        'Select * from dupetest where (' + term + '>0) and (Pub = "B.T." or Pub="Jyllands-Posten" or Pub="Berlingske" or Pub="Information" or Pub="Ekstra Bladet" or Pub="Politiken")',
+        'INFO.db')
+    # data=pull('Select * from dupetest where (DS>0) and (Pub = "B.T." or Pub="Jyllands-Posten" or Pub="Berlingske" or Pub="Information" or Pub="Ekstra Bladet" or Pub="Politiken")','INFO.db')
+    # data=pull('Select * from dupetest where (OV>0) and (Pub = "B.T." or Pub="Jyllands-Posten" or Pub="Berlingske" or Pub="Information" or Pub="Ekstra Bladet" or Pub="Politiken")','INFO.db')
     pubs=[d[2] for d in data]
     from collections import Counter
-    print len(data), 'articles pulled from database from:'
-    print Counter(pubs)
 
-    import sys
-    nfeatures=int(sys.argv[1])    # set number of features, default is 10000
-    NMFtopic(data,nfeatures)
-    print 'took', (time.time() - start) / 60, 'minutes'
+    print len(data), 'articles pulled from database'
+    c = Counter(pubs)
+    for i in c.iteritems():
+        print '%s : %s' % (i[0], i[1])
+
+    ntopics = int(sys.argv[2])
+    nfeatures = int(sys.argv[3])  # set number of features, default is 10000
+    NMFtopic(data, term, ntopics, nfeatures)
+    print 'took', round((time.time() - start) / 60, 2), 'minutes'
