@@ -1,0 +1,17 @@
+Instructions on running topicmodel2.py
+
+*database INFO.db must be in directory code is run in
+https://www.dropbox.com/s/lum1icj93q9z53p/INFO.db?dl=0
+
+python topicmodel2.py NI 3 10000
+
+1st parameter can be NI, OV, DS  (nemid, overvågning, digital signatur)
+2nd paramter is the number of topics you want to find
+3rd parameter is the number of features to use,
+    -for nemid and digital signatur a high number (200000) is fine as there are fewer articles, but for overvågning will crash with many features, better to stick to 10000
+    -it is unclear how much different numbers of features affect the clusters, as this is unsupervised, it is hard to measure the advantage of more or less features
+
+A folder will be made in the current directory called f.ex. NI_3_topics
+inside this folder are two files, 3_topics_topwords and 3_topics.csv
+and 3 subdirectories, one for each topic. The articles most related to each topic are written there.
+
