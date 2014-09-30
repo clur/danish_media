@@ -107,7 +107,7 @@ if __name__=="__main__":
         sys.exit(0)
     #pull the data
     data = pull(
-        'Select * from dupetest where (' + term + '>0) and (Pub = "B.T." or Pub="Jyllands-Posten" or Pub="Berlingske" or Pub="Information" or Pub="Ekstra Bladet" or Pub="Politiken")',
+        'Select * from info where (' + term + '>0) and (Pub = "B.T." or Pub="Jyllands-Posten" or Pub="Berlingske" or Pub="Information" or Pub="Ekstra Bladet" or Pub="Politiken")',
         'INFO.db')
     # data=pull('Select * from dupetest where (DS>0) and (Pub = "B.T." or Pub="Jyllands-Posten" or Pub="Berlingske" or Pub="Information" or Pub="Ekstra Bladet" or Pub="Politiken")','INFO.db')
     # data=pull('Select * from dupetest where (OV>0) and (Pub = "B.T." or Pub="Jyllands-Posten" or Pub="Berlingske" or Pub="Information" or Pub="Ekstra Bladet" or Pub="Politiken")','INFO.db')
