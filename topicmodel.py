@@ -124,7 +124,7 @@ if __name__ == "__main__":
     # data=pull('Select * from dupetest where OV>0 and Article like "%nowden%"','INFO.db')
     # data=pull('Select * from dupetest where OV>0','INFO.db')
     data = pull(
-        'Select * from dupetest where (NI>0) and (Pub = "B.T." or Pub="Jyllands-Posten" or Pub="Berlingske" or Pub="Information" or Pub="Ekstra Bladet" or Pub="Politiken")',
+        'Select * from info where (NI>0) and (Pub = "B.T." or Pub="Jyllands-Posten" or Pub="Berlingske" or Pub="Information" or Pub="Ekstra Bladet" or Pub="Politiken")',
         'INFO.db')
     # random.shuffle(data)
 
